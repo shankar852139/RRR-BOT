@@ -6,85 +6,75 @@ module.exports = function ({ models, api }) {
 			const result = await api.getThreadInfo(threadID);
 			return result;
 		}
-		catch (error) {
-			console.error('Error in getInfo:', error);
-			throw new Error('Failed to get thread info');
-		}
+		catch (error) { 
+			console.log(error);
+			throw new Error(error);
+		};
 	}
 
 	async function getAll(...data) {
-		let where, attributes;
+		var where, attributes;
 		for (const i of data) {
-			if (typeof i !== 'object') throw global.getText("threads", "needObjectOrArray");
+			if (typeof i != 'object') throw global.getText("threads", "needObjectOrArray");
 			if (Array.isArray(i)) attributes = i;
 			else where = i;
 		}
-		try {
-			const results = await Threads.findAll({ where, attributes });
-			return results.map(e => e.get({ plain: true }));
-		}
+		try { return (await Threads.findAll({ where, attributes })).map(e => e.get({ plain: true })); }
 		catch (error) {
-			console.error('Error in getAll:', error);
-			throw new Error('Failed to get all threads');
+			console.error(error);
+			throw new Error(error);
 		}
-	}
+}
 
 	async function getData(threadID) {
 		try {
-			const data = await Threads.findOne({ where: { threadID } });
+			const data = await Threads.findOne({ where: { threadID }});
 			if (data) return data.get({ plain: true });
 			else return false;
-		}
-		catch (error) {
-			console.error('Error in getData:', error);
-			throw new Error('Failed to get thread data');
+		} 
+		catch (error) { 
+			console.error(error);
+            throw new Error(error);
 		}
 	}
 
 	async function setData(threadID, options = {}) {
-		if (typeof options !== 'object' && !Array.isArray(options)) throw global.getText("threads", "needObject");
+		if (typeof options != 'object' && !Array.isArray(options)) throw global.getText("threads", "needObject");
 		try {
-			const data = await Threads.findOne({ where: { threadID } });
-			if (data) {
-				await data.update(options);
-				return true;
-			} else {
-				await createData(threadID, options);
-				return true;
+			(await Threads.findOne({ where: { threadID } })).update(options);
+			return true;
+		} catch (error) { 
+			try{
+				await this.createData(threadID, options);
+
+			} catch (error) {
+				console.error(error);
+				throw new Error(error);
 			}
-		}
-		catch (error) {
-			console.error('Error in setData:', error);
-			throw new Error('Failed to set thread data');
+			
 		}
 	}
 
 	async function delData(threadID) {
 		try {
-			const data = await Threads.findOne({ where: { threadID } });
-			if (data) {
-				await data.destroy();
-				return true;
-			}
-			else {
-				return false;
-			}
+			(await Threads.findOne({ where: { threadID } })).destroy();
+			return true;
 		}
 		catch (error) {
-			console.error('Error in delData:', error);
-			throw new Error('Failed to delete thread data');
+			console.error(error);
+			throw new Error(error);
 		}
 	}
 
 	async function createData(threadID, defaults = {}) {
-		if (typeof defaults !== 'object' && !Array.isArray(defaults)) throw global.getText("threads", "needObject");
+		if (typeof defaults != 'object' && !Array.isArray(defaults)) throw global.getText("threads", "needObject");
 		try {
 			await Threads.findOrCreate({ where: { threadID }, defaults });
 			return true;
 		}
-		catch (error) {
-			console.error('Error in createData:', error);
-			throw new Error('Failed to create thread data');
+		catch {
+			console.error(error);
+			throw new Error(error);
 		}
 	}
 
